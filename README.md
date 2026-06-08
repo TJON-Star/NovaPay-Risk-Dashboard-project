@@ -22,7 +22,11 @@ The risk register provides detailed entries for each identified risk, including 
 - [Risk Register Snapshot](images/NovaPay_Risk_Register.jpeg)  
 - [Power BI File](data/NovaPay_Risk_Dashboard.pbix)
 
-#Tech Stack section (Power BI, Excel, GitHub, ISO 27001, PCI‑DSS, NDPR).
+🛠️ Tech Stack
+- Power BI  
+- Excel  
+- GitHub  
+- Risk Management Frameworks (ISO 27001, PCI-DSS, NDPR)
 
 🧭 How to Use
 1. Download the `.pbix` file from the `data` folder.  
