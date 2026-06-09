@@ -1,4 +1,7 @@
-NovaPay Risk Dashboard
+NovaPay Technologies — GRC Risk Dashboard
+
+Author: Taiwo Johnson | GRC & Cybersecurity Risk Analyst  
+Tools:Power BI | DAX | ISO 27001:2022 | PCI-DSS | NDPR
 
 📖 Overview
 The NovaPay Risk Dashboard is a professional tool for monitoring compliance and risk metrics.  
