@@ -1,0 +1,258 @@
+
+<h2 class="sr-only">NovaPay Technologies GRC Risk Dashboard showing 20 risks across 5 interactive visuals including KPI cards, scatter heat map, category bar chart, status donut chart, and risk register table.</h2>
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+.dash { padding: 1.25rem; }
+.dash-header { margin-bottom: 1.25rem; }
+.dash-title { font-size: 17px; font-weight: 500; color: var(--color-text-primary); }
+.dash-sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+.kpi { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px 14px; }
+.kpi-label { font-size: 11px; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.kpi-value { font-size: 26px; font-weight: 500; }
+.kpi-sub { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.chart-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px; }
+.chart-title { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.4px; }
+.legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }
+.leg-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--color-text-secondary); }
+.leg-dot { width: 9px; height: 9px; border-radius: 50%; }
+.table-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px; margin-bottom: 12px; overflow-x: auto; }
+.risk-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.risk-table th { text-align: left; padding: 6px 8px; color: var(--color-text-secondary); font-weight: 500; border-bottom: 0.5px solid var(--color-border-tertiary); font-size: 11px; }
+.risk-table td { padding: 6px 8px; color: var(--color-text-primary); border-bottom: 0.5px solid var(--color-border-tertiary); vertical-align: middle; }
+.badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 500; }
+.badge-critical { background: #FCEBEB; color: #A32D2D; }
+.badge-high { background: #FAEEDA; color: #854F0B; }
+.badge-medium { background: #E6F1FB; color: #185FA5; }
+.badge-low { background: #EAF3DE; color: #3B6D11; }
+.badge-open { background: #FCEBEB; color: #A32D2D; }
+.badge-progress { background: #FAEEDA; color: #854F0B; }
+.badge-closed { background: #EAF3DE; color: #3B6D11; }
+.slicer-row { display: flex; gap: 10px; margin-bottom: 1rem; align-items: center; flex-wrap: wrap; }
+.slicer-label { font-size: 12px; color: var(--color-text-secondary); }
+select { font-size: 12px; padding: 4px 8px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary); cursor: pointer; }
+</style>
+
+<div class="dash">
+  <div class="dash-header">
+    <div class="dash-title">NovaPay Technologies — Information Security Risk Dashboard</div>
+    <div class="dash-sub">GRC Lead: Taiwo Johnson &nbsp;|&nbsp; Framework: ISO 27001:2022, PCI-DSS, NDPR &nbsp;|&nbsp; Last Review: Q1 2024 &nbsp;|&nbsp; Classification: Confidential</div>
+  </div>
+
+  <div class="slicer-row">
+    <span class="slicer-label">Filter by rating:</span>
+    <select id="filterRating" onchange="applyFilters()">
+      <option value="All">All ratings</option>
+      <option value="Critical">Critical</option>
+      <option value="High">High</option>
+      <option value="Medium">Medium</option>
+      <option value="Low">Low</option>
+    </select>
+    <span class="slicer-label">Filter by status:</span>
+    <select id="filterStatus" onchange="applyFilters()">
+      <option value="All">All statuses</option>
+      <option value="Open">Open</option>
+      <option value="In Progress">In Progress</option>
+      <option value="Closed">Closed</option>
+    </select>
+    <span class="slicer-label" id="filterCount" style="color: var(--color-text-primary); font-weight:500;"></span>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-label">Total risks</div><div class="kpi-value" style="color:var(--color-text-primary);" id="kpiTotal">20</div><div class="kpi-sub">across 8 categories</div></div>
+    <div class="kpi"><div class="kpi-label">Critical</div><div class="kpi-value" style="color:#A32D2D;" id="kpiCritical">4</div><div class="kpi-sub">act immediately</div></div>
+    <div class="kpi"><div class="kpi-label">High</div><div class="kpi-value" style="color:#854F0B;" id="kpiHigh">6</div><div class="kpi-sub">remediate within 30 days</div></div>
+    <div class="kpi"><div class="kpi-label">Open</div><div class="kpi-value" style="color:#A32D2D;" id="kpiOpen">10</div><div class="kpi-sub">require action</div></div>
+  </div>
+
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-title">Risk heat map — likelihood vs impact</div>
+      <div class="legend">
+        <span class="leg-item"><span class="leg-dot" style="background:#E24B4A;"></span>Critical</span>
+        <span class="leg-item"><span class="leg-dot" style="background:#EF9F27;"></span>High</span>
+        <span class="leg-item"><span class="leg-dot" style="background:#378ADD;"></span>Medium</span>
+        <span class="leg-item"><span class="leg-dot" style="background:#639922;"></span>Low</span>
+      </div>
+      <div style="position:relative;width:100%;height:240px;"><canvas id="scatterChart" role="img" aria-label="Scatter chart showing risk likelihood vs impact for 20 NovaPay risks. Critical risks cluster at high likelihood and impact scores.">Risk heat map with 4 critical, 6 high, 9 medium, 1 low risk.</canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Risks by category</div>
+      <div style="position:relative;width:100%;height:260px;"><canvas id="barChart" role="img" aria-label="Horizontal bar chart of risk count by category. Compliance/Audit has the most risks at 6.">Compliance/Audit: 6, Data Protection: 3, Technical: 2, Cyber/Operational: 1, Human Factor: 2, Information Security: 2, Operational: 2, Physical Security: 1, Cloud Security: 1.</canvas></div>
+    </div>
+  </div>
+
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-title">Treatment status breakdown</div>
+      <div class="legend">
+        <span class="leg-item"><span class="leg-dot" style="background:#E24B4A;"></span>Open (10)</span>
+        <span class="leg-item"><span class="leg-dot" style="background:#EF9F27;"></span>In Progress (8)</span>
+        <span class="leg-item"><span class="leg-dot" style="background:#639922;"></span>Closed (2)</span>
+      </div>
+      <div style="position:relative;width:100%;height:200px;"><canvas id="donutChart" role="img" aria-label="Donut chart showing risk treatment status. 10 open, 8 in progress, 2 closed.">Open: 10, In Progress: 8, Closed: 2.</canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Risk score distribution by rating</div>
+      <div style="position:relative;width:100%;height:220px;"><canvas id="ratingBar" role="img" aria-label="Bar chart showing count of risks per rating. Medium has 9, High has 6, Critical has 4, Low has 1.">Critical: 4, High: 6, Medium: 9, Low: 1.</canvas></div>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <div class="chart-title" style="margin-bottom:12px;">Risk register — all risks</div>
+    <table class="risk-table" id="riskTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Description</th>
+          <th>Category</th>
+          <th>Likelihood</th>
+          <th>Impact</th>
+          <th>Score</th>
+          <th>Rating</th>
+          <th>Status</th>
+          <th>Owner</th>
+        </tr>
+      </thead>
+      <tbody id="riskTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const risks = [
+  {id:'R-001',desc:'Unauthorised access to cardholder data environment (CDE)',cat:'Information Security',threat:'External Attacker',l:4,i:5,score:20,rating:'Critical',status:'In Progress',owner:'Head of Engineering'},
+  {id:'R-002',desc:'Inadequate logging and monitoring of privileged user activity',cat:'Compliance / Audit',threat:'Insider Threat',l:3,i:4,score:12,rating:'High',status:'In Progress',owner:'IT Operations'},
+  {id:'R-003',desc:'Failure to obtain valid data subject consent for processing',cat:'Data Protection / NDPR',threat:'Regulatory Body',l:2,i:5,score:10,rating:'High',status:'Open',owner:'Data Protection Officer'},
+  {id:'R-004',desc:'Vendor/third-party with access to PII fails security obligations',cat:'Third-Party Risk',threat:'Vendor',l:3,i:4,score:12,rating:'High',status:'Open',owner:'Procurement / Legal'},
+  {id:'R-005',desc:'Ransomware attack encrypts production database',cat:'Cyber / Operational',threat:'External Attacker',l:3,i:5,score:15,rating:'Critical',status:'In Progress',owner:'IT Operations'},
+  {id:'R-006',desc:'ISO 27001 audit finds undocumented control exceptions',cat:'Compliance / Audit',threat:'Certification Body',l:2,i:4,score:8,rating:'Medium',status:'In Progress',owner:'GRC Lead'},
+  {id:'R-007',desc:'Employee shares credentials with third party',cat:'Human Factor',threat:'Insider',l:2,i:3,score:6,rating:'Medium',status:'Open',owner:'HR / IT Security'},
+  {id:'R-008',desc:'Unpatched vulnerabilities in payment processing API',cat:'Technical',threat:'External Attacker',l:3,i:5,score:15,rating:'Critical',status:'Open',owner:'Head of Engineering'},
+  {id:'R-009',desc:'Non-compliance with PCI-DSS Requirement 12 (security policy)',cat:'Compliance / Audit',threat:'QSA / Auditor',l:2,i:4,score:8,rating:'Medium',status:'Closed',owner:'GRC Lead'},
+  {id:'R-010',desc:'Loss of key compliance personnel disrupts audit readiness',cat:'Operational',threat:'Internal',l:2,i:3,score:6,rating:'Medium',status:'Open',owner:'COO'},
+  {id:'R-011',desc:'Inadequate physical access controls to server room',cat:'Physical Security',threat:'Insider / Visitor',l:1,i:4,score:4,rating:'Low',status:'Closed',owner:'Facilities'},
+  {id:'R-012',desc:'Data breach notification failure within NDPR 72-hour window',cat:'Data Protection',threat:'Regulatory Body',l:2,i:5,score:10,rating:'High',status:'Open',owner:'DPO / Legal'},
+  {id:'R-013',desc:'Scope creep during PCI-DSS assessment increases CDE surface',cat:'Compliance / Audit',threat:'QSA',l:2,i:4,score:8,rating:'Medium',status:'Open',owner:'Head of Engineering'},
+  {id:'R-014',desc:'Cloud misconfiguration exposes sensitive customer data',cat:'Cloud Security',threat:'External / Internal',l:3,i:5,score:15,rating:'Critical',status:'In Progress',owner:'DevOps Lead'},
+  {id:'R-015',desc:'Audit evidence gaps delay ISO 27001 Stage 2 certification',cat:'Compliance / Audit',threat:'Certification Body',l:2,i:4,score:8,rating:'Medium',status:'In Progress',owner:'GRC Lead'},
+  {id:'R-016',desc:'Failure to enforce data retention and disposal policy',cat:'Data Protection',threat:'Regulatory Body',l:2,i:3,score:6,rating:'Medium',status:'Open',owner:'IT Operations'},
+  {id:'R-017',desc:'Insufficient business continuity plan for payment processing',cat:'Operational',threat:'Natural Disaster / Outage',l:2,i:5,score:10,rating:'High',status:'Open',owner:'COO'},
+  {id:'R-018',desc:'Lack of formal change management process introduces vulnerabilities',cat:'Technical',threat:'Internal',l:2,i:4,score:8,rating:'Medium',status:'In Progress',owner:'IT Operations'},
+  {id:'R-019',desc:'Social engineering attack targets finance team',cat:'Human Factor',threat:'External Attacker',l:3,i:3,score:9,rating:'Medium',status:'Open',owner:'HR / Finance'},
+  {id:'R-020',desc:'Inadequate encryption of data at rest in cloud storage',cat:'Information Security',threat:'External Attacker',l:2,i:5,score:10,rating:'High',status:'In Progress',owner:'DevOps Lead'},
+];
+
+const ratingColors = {Critical:'#E24B4A',High:'#EF9F27',Medium:'#378ADD',Low:'#639922'};
+const statusColors = {Open:'#E24B4A','In Progress':'#EF9F27',Closed:'#639922'};
+
+let filtered = [...risks];
+
+function badgeRating(r){const m={Critical:'badge-critical',High:'badge-high',Medium:'badge-medium',Low:'badge-low'};return`<span class="badge ${m[r]||''}">${r}</span>`;}
+function badgeStatus(s){const m={Open:'badge-open','In Progress':'badge-progress',Closed:'badge-closed'};return`<span class="badge ${m[s]||''}">${s}</span>`;}
+
+function renderTable(data){
+  const tbody=document.getElementById('riskTableBody');
+  tbody.innerHTML=data.map(r=>`<tr>
+    <td style="font-weight:500;white-space:nowrap;">${r.id}</td>
+    <td style="max-width:220px;">${r.desc}</td>
+    <td style="white-space:nowrap;">${r.cat}</td>
+    <td style="text-align:center;">${r.l}</td>
+    <td style="text-align:center;">${r.i}</td>
+    <td style="text-align:center;font-weight:500;color:${ratingColors[r.rating]};">${r.score}</td>
+    <td>${badgeRating(r.rating)}</td>
+    <td>${badgeStatus(r.status)}</td>
+    <td style="white-space:nowrap;font-size:11px;">${r.owner}</td>
+  </tr>`).join('');
+}
+
+function applyFilters(){
+  const rat=document.getElementById('filterRating').value;
+  const stat=document.getElementById('filterStatus').value;
+  filtered=risks.filter(r=>(rat==='All'||r.rating===rat)&&(stat==='All'||r.status===stat));
+  document.getElementById('filterCount').textContent=`${filtered.length} risk${filtered.length!==1?'s':''} shown`;
+  renderTable(filtered);
+  updateKPIs(filtered);
+}
+
+function updateKPIs(data){
+  document.getElementById('kpiTotal').textContent=data.length;
+  document.getElementById('kpiCritical').textContent=data.filter(r=>r.rating==='Critical').length;
+  document.getElementById('kpiHigh').textContent=data.filter(r=>r.rating==='High').length;
+  document.getElementById('kpiOpen').textContent=data.filter(r=>r.status==='Open').length;
+}
+
+renderTable(risks);
+document.getElementById('filterCount').textContent='20 risks shown';
+
+const scatter = new Chart(document.getElementById('scatterChart'),{
+  type:'bubble',
+  data:{
+    datasets:[
+      {label:'Critical',data:risks.filter(r=>r.rating==='Critical').map(r=>({x:r.l,y:r.i,r:Math.max(r.score/3,6),id:r.id})),backgroundColor:'rgba(226,75,74,0.75)',borderColor:'#A32D2D',borderWidth:1},
+      {label:'High',data:risks.filter(r=>r.rating==='High').map(r=>({x:r.l,y:r.i,r:Math.max(r.score/3,6),id:r.id})),backgroundColor:'rgba(239,159,39,0.75)',borderColor:'#854F0B',borderWidth:1},
+      {label:'Medium',data:risks.filter(r=>r.rating==='Medium').map(r=>({x:r.l,y:r.i,r:Math.max(r.score/3,6),id:r.id})),backgroundColor:'rgba(55,138,221,0.65)',borderColor:'#185FA5',borderWidth:1},
+      {label:'Low',data:risks.filter(r=>r.rating==='Low').map(r=>({x:r.l,y:r.i,r:Math.max(r.score/3,6),id:r.id})),backgroundColor:'rgba(99,153,34,0.75)',borderColor:'#3B6D11',borderWidth:1},
+    ]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:(ctx)=>{const d=ctx.raw;const risk=risks.find(r=>r.l===d.x&&r.i===d.y&&ratingColors[r.rating]===ctx.dataset.borderColor.replace('#','#'));return`Score: ${Math.round(d.r*3)} | L:${d.x} × I:${d.y}`;}}}},
+    scales:{
+      x:{min:0,max:6,title:{display:true,text:'Likelihood',font:{size:11},color:'#888'},grid:{color:'rgba(128,128,128,0.1)'},ticks:{stepSize:1,font:{size:10}}},
+      y:{min:0,max:6,title:{display:true,text:'Impact',font:{size:11},color:'#888'},grid:{color:'rgba(128,128,128,0.1)'},ticks:{stepSize:1,font:{size:10}}}
+    },
+    layout:{padding:{top:10,right:10,bottom:5,left:5}}
+  }
+});
+
+const catCounts={};risks.forEach(r=>{catCounts[r.cat]=(catCounts[r.cat]||0)+1;});
+const catLabels=Object.keys(catCounts).sort((a,b)=>catCounts[b]-catCounts[a]);
+const catData=catLabels.map(c=>catCounts[c]);
+const catColors=catLabels.map((_,i)=>['#378ADD','#EF9F27','#E24B4A','#639922','#9F77DD','#1D9E75','#D85A30','#D4537E'][i%8]);
+
+new Chart(document.getElementById('barChart'),{
+  type:'bar',
+  data:{labels:catLabels,datasets:[{label:'Risks',data:catData,backgroundColor:catColors,borderRadius:4,borderSkipped:false}]},
+  options:{
+    indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:(ctx)=>`${ctx.raw} risk${ctx.raw!==1?'s':''}`}}},
+    scales:{
+      x:{grid:{color:'rgba(128,128,128,0.1)'},ticks:{stepSize:1,font:{size:10}},title:{display:true,text:'Number of risks',font:{size:10},color:'#888'}},
+      y:{grid:{display:false},ticks:{font:{size:10}}}
+    }
+  }
+});
+
+new Chart(document.getElementById('donutChart'),{
+  type:'doughnut',
+  data:{
+    labels:['Open','In Progress','Closed'],
+    datasets:[{data:[10,8,2],backgroundColor:['#E24B4A','#EF9F27','#639922'],borderColor:['#A32D2D','#854F0B','#3B6D11'],borderWidth:1.5,hoverOffset:4}]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,cutout:'62%',
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:(ctx)=>`${ctx.label}: ${ctx.raw} risks (${Math.round(ctx.raw/20*100)}%)`}}}
+  }
+});
+
+new Chart(document.getElementById('ratingBar'),{
+  type:'bar',
+  data:{
+    labels:['Critical','High','Medium','Low'],
+    datasets:[{label:'Count',data:[4,6,9,1],backgroundColor:['#E24B4A','#EF9F27','#378ADD','#639922'],borderRadius:4,borderSkipped:false}]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:(ctx)=>`${ctx.raw} risks`}}},
+    scales:{
+      x:{grid:{display:false},ticks:{font:{size:10}}},
+      y:{grid:{color:'rgba(128,128,128,0.1)'},ticks:{stepSize:1,font:{size:10}},title:{display:true,text:'Count',font:{size:10},color:'#888'}}
+    }
+  }
+});
+</script>
