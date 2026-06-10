@@ -1,6 +1,6 @@
 # NovaPay Technologies - GRC Risk Dashboard
 
-> *Transforming raw data into actionable insights for governance, risk, and compliance.*
+> *20 fintech risks. 4 critical. Built in Power BI from a real GRC risk register.*
 
 ![Dashboard Preview](The%20Full%20Dashboard%20Overview.jpeg)
 
